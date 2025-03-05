@@ -29,12 +29,55 @@
     </div>
 
 <script>
-  const msg = new SpeechSynthesisUtterance();
-  let voices = [];
-  const voicesDropdown = document.querySelector('[name="voice"]');
-  const options = document.querySelectorAll('[type="range"], [name="text"]');
-  const speakButton = document.querySelector('#speak');
-  const stopButton = document.querySelector('#stop');
+  // Initialize speech synthesis object
+const msg = new SpeechSynthesisUtterance();
+let voices = [];
+const voicesDropdown = document.querySelector('[name="voice"]');
+const options = document.querySelectorAll('[type="range"], [name="text"]');
+const speakButton = document.querySelector('#speak');
+const stopButton = document.querySelector('#stop');
+
+// Function to populate voices in dropdown
+function populateVoices() {
+    voices = speechSynthesis.getVoices();
+    voicesDropdown.innerHTML = voices
+        .map(voice => `<option value="${voice.name}">${voice.name} (${voice.lang})</option>`) 
+        .join('');
+}
+
+// Function to set selected voice
+function setVoice() {
+    msg.voice = voices.find(voice => voice.name === this.value);
+}
+
+// Function to start speaking
+function speak() {
+    msg.text = document.querySelector('[name="text"]').value;
+    if (msg.text.trim() === "") return; // Prevent speaking empty text
+    speechSynthesis.cancel(); // Stop any ongoing speech
+    speechSynthesis.speak(msg);
+}
+
+// Function to stop speaking
+function stop() {
+    speechSynthesis.cancel();
+}
+
+// Function to update pitch and rate dynamically
+function setOption() {
+    msg[this.name] = this.value;
+    speak(); // Restart speech with updated settings
+}
+
+// Event Listeners
+speechSynthesis.addEventListener('voiceschanged', populateVoices);
+voicesDropdown.addEventListener('change', setVoice);
+options.forEach(option => option.addEventListener('change', setOption));
+speakButton.addEventListener('click', speak);
+stopButton.addEventListener('click', stop);
+
+// Populate voices initially (in case voiceschanged event doesn't fire immediately)
+populateVoices();
 
   //Your code goes here
 </script>
